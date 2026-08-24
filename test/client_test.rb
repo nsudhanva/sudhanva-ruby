@@ -22,6 +22,13 @@ class SudhanvaClientTest < Minitest::Test
     Sudhanva::Response.new(status: status, headers: {}, body: JSON.generate(payload))
   end
 
+  def test_gemspec_and_user_agent_share_one_version
+    specification = Gem::Specification.load(File.expand_path("../sudhanva.gemspec", __dir__))
+
+    assert_equal Sudhanva::VERSION, specification.version.to_s
+    assert_equal "sudhanva-ruby/#{Sudhanva::VERSION}", Sudhanva::Client::USER_AGENT
+  end
+
   def test_posts_encodes_filters_and_identifies_client
     transport = FakeTransport.new(response(200, "posts" => []))
     client = Sudhanva::Client.new(base_url: "https://example.test/api/v1", transport: transport)
