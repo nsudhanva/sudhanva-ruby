@@ -32,5 +32,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name }}
-      - uses: rubygems/configure-rubygems-credentials@v2
+      - uses: rubygems/configure-rubygems-credentials@dc5a8d8553e6ee01fc26761a49e99e733d17954a # v2.1.0; the action publishes no moving major tag
       - run: gem push sudhanva-*.gem
