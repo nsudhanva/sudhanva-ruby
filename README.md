@@ -9,6 +9,8 @@ The API is public and requires no credentials. Do not send private data.
 
 ## Install
 
+Requires Ruby 3.3 or newer.
+
 ```bash
 gem install sudhanva --version 0.2.0
 ```
@@ -39,7 +41,9 @@ result = client.wait_for_profile_insight(job["job_id"])
 ```
 
 All methods return decoded JSON hashes. Non-success responses raise `Sudhanva::APIError` with
-`status`, `code`, and the decoded response body.
+`status`, `code`, `hint`, `docs_url`, and the decoded response body; the exception message includes
+the API's explanation. RFC 9457 problem responses from the profile-insight endpoints map `detail`
+(or `title`) to the message and the last segment of `type` to `code`.
 
 ## API coverage
 

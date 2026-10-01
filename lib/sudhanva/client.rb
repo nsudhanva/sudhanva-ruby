@@ -8,14 +8,55 @@ module Sudhanva
   Response = Struct.new(:status, :headers, :body, keyword_init: true)
 
   class APIError < StandardError
-    attr_reader :status, :code, :body
+    attr_reader :status, :code, :body, :hint, :docs_url
 
-    def initialize(status:, code:, message:, body:)
+    def initialize(status:, code:, message:, body:, hint: nil, docs_url: nil)
       super("#{status} #{code}: #{message}")
       @status = status
       @code = code
       @body = body
+      @hint = hint
+      @docs_url = docs_url
     end
+
+    # Builds an error from the standard envelope or an RFC 9457 problem.
+    def self.from_response(status, payload)
+      body = payload.is_a?(Hash) ? payload : {}
+      nested = body["error"]
+      error = nested.is_a?(Hash) ? nested : body
+
+      code = text(error["code"]) || text(body["code"])
+      message = text(error["message"]) || text(body["message"])
+      if code.nil? && message.nil?
+        title = text(body["title"])
+        code = problem_code(text(body["type"])) || title
+        message = text(body["detail"]) || title
+      end
+      message ||= nested if nested.is_a?(String) && !nested.empty?
+
+      new(
+        status: status,
+        code: code || "api_error",
+        message: message || "Request failed",
+        body: payload,
+        hint: text(error["hint"]),
+        docs_url: text(error["docs_url"])
+      )
+    end
+
+    def self.text(value)
+      value if value.is_a?(String) && !value.empty?
+    end
+
+    # Returns the last fragment or path segment of a problem type URI.
+    def self.problem_code(type)
+      return nil if type.nil? || type == "about:blank"
+
+      base, _, fragment = type.partition("#")
+      text(fragment) || text(base.sub(%r{/+\z}, "").split("/").last)
+    end
+
+    private_class_method :text, :problem_code
   end
 
   class Client
@@ -127,10 +168,7 @@ module Sudhanva
       response = @transport.call(method, uri, request_headers, body, @timeout)
       payload = response.body.to_s.empty? ? {} : JSON.parse(response.body)
       unless response.status.between?(200, 299)
-        error = payload.fetch("error", payload)
-        code = error.fetch("code", payload.fetch("code", "api_error"))
-        message = error.fetch("message", payload.fetch("message", "Request failed"))
-        raise APIError.new(status: response.status, code: code, message: message, body: payload)
+        raise APIError.from_response(response.status, payload)
       end
 
       raise APIError.new(status: response.status, code: "invalid_response", message: "API returned a non-object response", body: payload) unless payload.is_a?(Hash)

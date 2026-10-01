@@ -94,4 +94,64 @@ class SudhanvaClientTest < Minitest::Test
     assert_equal 404, error.status
     assert_equal "not_found", error.code
   end
+
+  def test_error_envelope_keeps_hint_and_docs_url
+    envelope = {
+      "error" => {
+        "code" => "POST_NOT_FOUND",
+        "message" => "No published post exists.",
+        "hint" => "List published posts first.",
+        "docs_url" => "https://sudhanva.me/developers/"
+      }
+    }
+    client = Sudhanva::Client.new(transport: FakeTransport.new(response(404, envelope)))
+
+    error = assert_raises(Sudhanva::APIError) { client.post("missing") }
+    assert_equal "POST_NOT_FOUND", error.code
+    assert_equal "404 POST_NOT_FOUND: No published post exists.", error.message
+    assert_equal "List published posts first.", error.hint
+    assert_equal "https://sudhanva.me/developers/", error.docs_url
+  end
+
+  def test_problem_details_are_exposed
+    problem = {
+      "type" => "https://sudhanva.me/docs/profile-insights/#idempotency-key-reuse",
+      "title" => "Idempotency-Key reused",
+      "status" => 422,
+      "detail" => "This key was already used with a different request body.",
+      "instance" => "/api/v1/profile-insights"
+    }
+    client = Sudhanva::Client.new(transport: FakeTransport.new(response(422, problem)))
+
+    error = assert_raises(Sudhanva::APIError) do
+      client.create_profile_insight(audience: "agent", idempotency_key: "ruby-test-123")
+    end
+    assert_equal 422, error.status
+    assert_equal "idempotency-key-reuse", error.code
+    assert_equal "422 idempotency-key-reuse: #{problem["detail"]}", error.message
+    assert_equal problem, error.body
+  end
+
+  def test_problem_without_detail_falls_back_to_title
+    problem = { "type" => "about:blank", "title" => "Service Unavailable", "status" => 503 }
+    client = Sudhanva::Client.new(transport: FakeTransport.new(response(503, problem)))
+
+    error = assert_raises(Sudhanva::APIError) { client.profile_insight("pi_test") }
+    assert_equal "503 Service Unavailable: Service Unavailable", error.message
+  end
+
+  def test_unexpected_error_bodies_still_raise_api_error
+    [["unexpected"], { "error" => "Bad gateway" }, "oops", nil].each do |payload|
+      client = Sudhanva::Client.new(transport: FakeTransport.new(response(502, payload)))
+
+      error = assert_raises(Sudhanva::APIError) { client.profile }
+      assert_equal 502, error.status
+      assert_equal "api_error", error.code
+      payload.nil? ? assert_nil(error.body) : assert_equal(payload, error.body)
+    end
+
+    client = Sudhanva::Client.new(transport: FakeTransport.new(response(502, "error" => "Bad gateway")))
+    error = assert_raises(Sudhanva::APIError) { client.profile }
+    assert_equal "502 api_error: Bad gateway", error.message
+  end
 end
