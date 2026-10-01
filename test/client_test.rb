@@ -38,7 +38,7 @@ class SudhanvaClientTest < Minitest::Test
     method, uri, headers, body, timeout = transport.requests.first
     assert_equal "GET", method
     assert_equal "https://example.test/api/v1/posts?limit=5&tag=machine-learning", uri.to_s
-    assert_equal "sudhanva-ruby/0.1.0", headers["User-Agent"]
+    assert_equal "sudhanva-ruby/0.2.0", headers["User-Agent"]
     assert_nil body
     assert_equal 10, timeout
   end

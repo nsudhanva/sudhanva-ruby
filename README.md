@@ -10,13 +10,13 @@ The API is public and requires no credentials. Do not send private data.
 ## Install
 
 ```bash
-gem install sudhanva --version 0.1.0
+gem install sudhanva --version 0.2.0
 ```
 
 Or add it to a `Gemfile`:
 
 ```ruby
-gem "sudhanva", "~> 0.1.0"
+gem "sudhanva", "~> 0.2.0"
 ```
 
 ## Use
