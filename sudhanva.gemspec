@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.description = "A dependency-free client for published profile data, articles, search, batch reads, and profile-insight jobs."
   spec.homepage = "https://sudhanva.me"
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 3.1"
+  spec.required_ruby_version = ">= 3.3"
 
   spec.metadata = {
     "homepage_uri" => "https://sudhanva.me",
