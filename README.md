@@ -1,21 +1,21 @@
 # sudhanva for Ruby
 
-Minimal, dependency-free Ruby client for the public
-[sudhanva.me API](https://sudhanva.me/openapi.json). It retrieves published profile and article
-metadata, performs bounded batch reads, searches the published site, and creates or polls temporary
-profile-insight jobs.
+This is a small Ruby client for the public [sudhanva.me API](https://sudhanva.me/openapi.json).
+It has no dependencies. Use it to get the published profile and article metadata, to read items in
+batches of a limited size, and to search the published site. You can also use it to create and poll
+temporary profile-insight jobs.
 
-The API is public and requires no credentials. Do not send private data.
+The API is public. It does not need credentials. Do not send private data to it.
 
 ## Install
 
-Requires Ruby 3.3 or newer.
+You must have Ruby 3.3 or a later version.
 
 ```bash
 gem install sudhanva --version 0.2.0
 ```
 
-Or add it to a `Gemfile`:
+You can also add it to a `Gemfile`:
 
 ```ruby
 gem "sudhanva", "~> 0.2.0"
@@ -40,10 +40,14 @@ job = client.create_profile_insight(
 result = client.wait_for_profile_insight(job["job_id"])
 ```
 
-All methods return decoded JSON hashes. Non-success responses raise `Sudhanva::APIError` with
-`status`, `code`, `hint`, `docs_url`, and the decoded response body; the exception message includes
-the API's explanation. RFC 9457 problem responses from the profile-insight endpoints map `detail`
-(or `title`) to the message and the last segment of `type` to `code`.
+All methods return decoded JSON hashes.
+
+If a response is not a success, the client raises `Sudhanva::APIError`. This error has the fields
+`status`, `code`, `hint`, `docs_url`, and the decoded response body. The exception message contains
+the explanation from the API.
+
+The profile-insight endpoints can send an RFC 9457 problem response. For this type of response,
+the client puts `detail` (or `title`) in the message. It puts the last segment of `type` in `code`.
 
 ## API coverage
 
@@ -53,8 +57,8 @@ the API's explanation. RFC 9457 problem responses from the profile-insight endpo
 - `create_profile_insight`, `profile_insight`, and `wait_for_profile_insight`
 - `ask` for NLWeb conversational search
 
-The client follows the stable `/api/v1` contract. See the
-[developer documentation](https://sudhanva.me/developers/sdks/) and
+The client uses the stable `/api/v1` contract. For more information, read the
+[developer documentation](https://sudhanva.me/developers/sdks/) and the
 [versioning policy](https://sudhanva.me/developers/versioning/).
 
 ## Development
@@ -65,7 +69,7 @@ bundle exec rake test
 gem build sudhanva.gemspec
 ```
 
-The test suite uses an injected transport and never calls production.
+The test suite uses an injected transport. It does not call production.
 
 ## License
 

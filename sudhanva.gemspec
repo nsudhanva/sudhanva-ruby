@@ -7,8 +7,8 @@ Gem::Specification.new do |spec|
   spec.version = Sudhanva::VERSION
   spec.authors = ["Sudhanva Narayana"]
   spec.email = ["nsudhanva@gmail.com"]
-  spec.summary = "Minimal Ruby client for the public sudhanva.me API."
-  spec.description = "A dependency-free client for published profile data, articles, search, batch reads, and profile-insight jobs."
+  spec.summary = "A small Ruby client for the public sudhanva.me API."
+  spec.description = "A Ruby client with no dependencies. Use it for published profile data, articles, search, batch reads, and profile-insight jobs."
   spec.homepage = "https://sudhanva.me"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.3"
